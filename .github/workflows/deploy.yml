@@ -73,26 +73,14 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
 
-      - name: Install published infomap with docs extras
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install "infomap[docs]==${{ steps.ref.outputs.version }}"
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
 
       - name: Build docs
-        env:
-          SPHINX_SOURCE_DIR: interfaces/python/source
-          SPHINX_TARGET_DIR: docs
-        run: |
-          set -euo pipefail
+        run: make build-docs
 
-          mkdir -p "$SPHINX_TARGET_DIR"
-          cp -a README.rst "$SPHINX_SOURCE_DIR/index.rst"
-          trap 'rm -f "$SPHINX_SOURCE_DIR/index.rst"' EXIT
-
-          python -m sphinx -b html "$SPHINX_SOURCE_DIR" "$SPHINX_TARGET_DIR"
-
-          rm -rf "$SPHINX_TARGET_DIR/.doctrees"
-          touch "$SPHINX_TARGET_DIR/.nojekyll"
+      - name: Add .nojekyll
+        run: touch ./docs/.nojekyll
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v5
